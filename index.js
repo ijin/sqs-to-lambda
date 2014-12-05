@@ -24,10 +24,18 @@ var lambda = new AWS.Lambda({
 });
 
 function handleMessage(message, done) {
+  console.log(new Date().toString());
+  console.log("Received SQS message:");
+  console.log(message);
+  var body = JSON.stringify(JSON.parse(message.Body)).replace(/\\"/g, '!!'); // escape to workaround this problem: https://forums.aws.amazon.com/thread.jspa?threadID=166893&tstart=0
   lambda.invokeAsync({
     FunctionName: functionName,
-    InvokeArgs: message.Body
-  }, done);
+    InvokeArgs: body
+  }, function(err, data) {
+    if (err) console.log(err, err.stack); // an error occurred
+    else     console.log(data);           // successful response
+  });
+  done();
 }
 
 function verifyLambdaFunction(cb) {
